@@ -1,10 +1,17 @@
 from app import app, db
 from app.models import Restaurant, MenuItem
+from app.google_auth_config import google_secrets_config, AUTHORIZATION_SCOPE
+from app.utils import credentials_to_dict
 
-from flask import Flask, render_template, request, redirect,jsonify, url_for, flash
+import flask
+from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
+from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 from flask import session as login_session
 
 import random, string
+
+import google.oauth2.credentials
+import google_auth_oauthlib.flow
 
 
 # Show all restaurants
@@ -17,12 +24,68 @@ def showRestaurants():
   return render_template('restaurants.html', restaurants = restaurants)
 
 # Create anti-forgery token
+# @app.route('/login')
+# def showLogin():
+#     # state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(32))
+#     # login_session['state'] = state
+#     #return "The current session state is %s" % login_session['state'] 
+#     return render_template('auth.html')
+
+
 @app.route('/login')
-def showLogin():
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(32))
-    login_session['state'] = state
-    #return "The current session state is %s" % login_session['state'] 
-    return render_template('login.html')
+def authorize():
+    # https://developers.google.com/identity/protocols/oauth2/web-server#example
+    # https://www.mattbutton.com/2019/01/05/google-authentication-with-python-and-flask/
+    # https://realpython.com/flask-google-login/
+    
+    # create a Flow instance to manage the 0Auth 2.0 Authorization Grant Flow steps
+    flow = google_auth_oauthlib.flow.Flow.from_client_config(
+        google_secrets_config,
+        scopes=AUTHORIZATION_SCOPE
+    )
+    flow.redirect_uri = url_for('loginCallback', _external=True)
+
+    # Enable 
+    # - offline access so that you can refresh an access token 
+    #   without re-prompting the user for permission
+    # - incremental authorization
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        prompt='consent',
+        include_granted_scopes='true'
+    )
+
+    # Store the state so the callback can verify the auth server response.
+    flask.session['state'] = state
+
+    return redirect(authorization_url)
+
+
+@app.route('/login/callback')
+def loginCallback():
+    # Specify the state when creating the flow in the callback so that it can
+    # verified in the authorization server response.
+    state = flask.session['state']
+
+    flow = google_auth_oauthlib.flow.Flow.from_client_config(
+        google_secrets_config,
+        scopes=AUTHORIZATION_SCOPE,
+        state=state
+    )
+    flow.redirect_uri = url_for('loginCallback', _external=True)
+
+    # Use the authorization server's response to fetch the OAuth 2.0 tokens.
+    authorization_response = flask.request.url
+    flow.fetch_token(authorization_response=authorization_response)
+
+    credentials = flow.credentials
+    flask.session['credentials'] = credentials_to_dict(credentials)
+
+    return redirect(url_for('showRestaurants'))
+
+
+
+# @app.route('/logout')
 
 #JSON APIs to view Restaurant Information
 @app.route('/restaurant/<int:restaurant_id>/menu/JSON')
@@ -43,7 +106,7 @@ def restaurantsJSON():
     return jsonify(restaurants= [r.serialize for r in restaurants])
 
 
-#Create a new restaurant
+# Create a new restaurant
 @app.route('/restaurant/new/', methods=['GET','POST'])
 def newRestaurant():
   if request.method == 'POST':
