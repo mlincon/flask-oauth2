@@ -24,15 +24,12 @@ def showRestaurants():
   return render_template('restaurants.html', restaurants = restaurants)
 
 # Create anti-forgery token
-# @app.route('/login')
-# def showLogin():
-#     # state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(32))
-#     # login_session['state'] = state
-#     #return "The current session state is %s" % login_session['state'] 
-#     return render_template('auth.html')
-
-
 @app.route('/login')
+def showLogin():
+    return render_template('login.html')
+
+
+@app.route('/auth')
 def authorize():
     # https://developers.google.com/identity/protocols/oauth2/web-server#example
     # https://www.mattbutton.com/2019/01/05/google-authentication-with-python-and-flask/

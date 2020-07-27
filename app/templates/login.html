@@ -1,0 +1,54 @@
+{% extends "main.html" %}
+{% block content %}
+<style type="text/css">
+  .outer-div {
+    /* background-color: aqua;
+    border: 3px solid green; */
+    min-height: 100vh;
+  }
+
+  .login-card {
+    background-color: white;
+    border-radius: 0.2em;
+    border: 1px solid lightgray;
+  }
+
+  .login-card div:first-child {
+    margin-top: 10px;
+  }
+
+  .login-card div:last-child {
+    margin-bottom: 10px;
+  }
+  
+  .login-button {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border: 0.8px solid lightgray;
+    border-radius: 0.2em;
+  }
+  .login-button > a {
+    color: #212529;
+    font-size: 1em;
+  }
+</style>
+
+<div class="row align-items-center outer-div">
+  <div class="col"></div>
+  <div class="col login-card">
+    <div class="text-center">Login</div>
+    <hr>
+    <div class="btn-light text-center login-button">
+
+      <a href="/auth">
+        <img width="20px" style="margin-bottom:3px; margin-right:5px" alt="Google sign-in"
+          src="{{ url_for('static', filename='images/icon-google.png') }}" />
+        Google
+      </a>
+
+    </div>
+    <div class="text-center"></div>
+  </div>
+  <div class="col"></div>
+</div>
+{% endblock %}
