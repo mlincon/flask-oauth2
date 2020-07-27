@@ -119,8 +119,8 @@ h3 {
  .restaurant-list {
  	background-color: #F0F0F0;
  	padding: 20px;
-u }
- .restaurant-list:hover {
+}
+.restaurant-list:hover {
  	background-color: #e1e17f;
  	padding: 20px;
 }
