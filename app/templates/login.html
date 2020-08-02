@@ -20,17 +20,20 @@
   .login-card div:last-child {
     margin-bottom: 10px;
   }
-  
+
   .login-button {
     padding-top: 5px;
     padding-bottom: 5px;
     border: 0.8px solid lightgray;
     border-radius: 0.2em;
-  }
-  .login-button > a {
     color: #212529;
     font-size: 1em;
   }
+
+  .login-button:hover{
+    text-decoration: none;
+  }
+
 </style>
 
 <div class="row align-items-center outer-div">
@@ -38,9 +41,10 @@
   <div class="col login-card">
     <div class="text-center">Login</div>
     <hr>
-    <div class="btn-light text-center login-button">
+    <div>
 
-      <a href="/auth">
+      <!-- Google login button -->
+      <a href="/auth" class="btn-light btn-lg btn-block login-button text-center" role="button" style="width: 100%;">
         <img width="20px" style="margin-bottom:3px; margin-right:5px" alt="Google sign-in"
           src="{{ url_for('static', filename='images/icon-google.png') }}" />
         Google
