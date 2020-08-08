@@ -18,6 +18,9 @@ AUTHORIZATION_SCOPE = [
     'openid'
 ]
 
+GOOGLE_ISSUER = 'https://accounts.google.com'
+GOOGLE_DISCOVERY_ENDPOINT = 'https://accounts.google.com/.well-known/openid-configuration'
+
 google_secrets_config = {
     'web': {
         'client_id': CLIENT_ID, 
