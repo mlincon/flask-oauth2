@@ -10,17 +10,6 @@ CLIENT_SECRET = os.environ.get('FooLogger_CLIENT_SECRET')
 JAVASCRIPT_ORIGINS = os.environ.get('FooLogger_JAVASCRIPT_ORIGINS')
 AUTH_PROVIDER_X509_CERT_URL = os.environ.get('FooLogger_AUTH_PROVIDER_X509_CERT_URL')
 
-# Google Authorization scope
-# https://developers.google.com/identity/protocols/oauth2/scopes#people
-AUTHORIZATION_SCOPE = [
-    'https://www.googleapis.com/auth/userinfo.email', # email
-    'https://www.googleapis.com/auth/userinfo.profile', # profile
-    'openid'
-]
-
-GOOGLE_ISSUER = 'https://accounts.google.com'
-GOOGLE_DISCOVERY_ENDPOINT = 'https://accounts.google.com/.well-known/openid-configuration'
-
 google_secrets_config = {
     'web': {
         'client_id': CLIENT_ID, 
@@ -33,3 +22,23 @@ google_secrets_config = {
         'javascript_origins': JAVASCRIPT_ORIGINS
     }
 }
+
+
+# Google Authorization scope
+# https://developers.google.com/identity/protocols/oauth2/scopes#people
+AUTHORIZATION_SCOPE = [
+    'https://www.googleapis.com/auth/userinfo.email', # email
+    'https://www.googleapis.com/auth/userinfo.profile', # profile
+    'openid'
+]
+
+GOOGLE_ISSUER = 'https://accounts.google.com'
+
+GOOGLE_OPENID_ENDPOINTS = {
+    'discovery': 'https://accounts.google.com/.well-known/openid-configuration',
+    'jwk': 'https://www.googleapis.com/oauth2/v3/certs',
+    'userinfo': 'https://openidconnect.googleapis.com/v1/userinfo',
+    'token': 'https://oauth2.googleapis.com/token'
+}
+
+

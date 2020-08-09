@@ -2,6 +2,7 @@ import os
 import json
 import time
 import requests
+import warnings
 
 import flask
 from flask import Flask, request, jsonify, flash, session
@@ -24,7 +25,7 @@ from cryptography.hazmat.primitives import serialization
 
 from app import app, db
 from app.google_auth_config import google_secrets_config 
-from app.google_auth_config import AUTHORIZATION_SCOPE, GOOGLE_ISSUER, GOOGLE_DISCOVERY_ENDPOINT
+from app.google_auth_config import AUTHORIZATION_SCOPE, GOOGLE_ISSUER, GOOGLE_OPENID_ENDPOINTS
 from app.utils import credentials_to_dict
 
 # Create anti-forgery token
@@ -39,12 +40,8 @@ def authorize():
     # https://developers.google.com/identity/protocols/oauth2/web-server#example
     # https://www.mattbutton.com/2019/01/05/google-authentication-with-python-and-flask/
     # https://realpython.com/flask-google-login/
-    # https://developers.google.com/identity/sign-in/web/backend-auth
     # https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
-    # https://developers.google.com/identity/protocols/oauth2/openid-connect
-    # https://developers.google.com/identity/protocols/oauth2/openid-connect#createxsrftoken
     # https://github.com/udacity/ud330/blob/master/Lesson2/step5/project.py
-    # https://www.oauth.com/oauth2-servers/signing-in-with-google/verifying-the-user-info/
     
     # - create a Flow instance to manage the 0Auth 2.0 Authorization Grant Flow steps
     # - authenticate the client/identify the application using information from secrets
@@ -100,7 +97,6 @@ def loginCallback():
 
     # Probably the state is already verified in the above step
     err = validate_state_token(request, session)
-    print(err)
     if err is not None:
         return error_response('Invalid state parameter.', err)
 
@@ -108,20 +104,46 @@ def loginCallback():
     authorization_response = request.url
     token = flow.fetch_token(authorization_response=authorization_response)
 
+    print('--token:', token)
+
     # validate token, if success get the decoded payload
     payload, err = validate_access_token(token['id_token'])
     if err is not None:
         return error_response('Invalid credentials.', err)
     # alternatively, use the verify_oauth2_token function from the google-auth library
     # https://developers.google.com/identity/one-tap/android/idtoken-auth
-    
-    print("\n", token['id_token'])
 
+    # it is also possible to use a tokeninfo endpoint to get the token ID details instead of parsing it yourself
+    # https://www.oauth.com/oauth2-servers/signing-in-with-google/verifying-the-user-info/
+    # e.g.: https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=eyJ...
+    
     credentials = flow.credentials
     session['credentials'] = credentials_to_dict(credentials)
 
-    return flask.redirect(flask.url_for('showRestaurants'))
+    # although it is possible to directly get name, email and profile picture info by decode id token
+    # and is available in the payload, as a practice, we still make a request to the userinfo endpoint 
+    # to retrieve the data  
+    # https://www.oauth.com/oauth2-servers/signing-in-with-google/verifying-the-user-info/
+    access_token = token['access_token']
+    token_type = token['token_type'] # Bearer
+    auth_header = {'Authorization': f'{token_type} {access_token}'}
+    try:
+        userinfo = requests.get(GOOGLE_OPENID_ENDPOINTS['userinfo'], headers = auth_header).json()
+    except:
+        # incase the stored URI did not work, fetch URI from discovery document
+        userinfo_endpoint = get_openid_endpoint('userinfo_endpoint')
+        userinfo = requests.get(GOOGLE_OPENID_ENDPOINTS['userinfo'], headers = auth_header).json()
 
+    user = {
+        'name': userinfo['name'],
+        'email': userinfo['email'],
+        'picture': userinfo['picture'],
+        'email_verified': userinfo['email_verified']
+    }
+
+    session['user'] = user
+
+    return flask.redirect(flask.url_for('showRestaurants'))
 
 
 # @app.route('/logout')
@@ -142,7 +164,7 @@ def validate_state_token(request, session):
         return None
 
 
-def validate_access_token(token):
+def validate_access_token(id_token):
 
     # We need to validate all ID tokens on the server unless we know that they came directly from Google
 
@@ -158,11 +180,11 @@ def validate_access_token(token):
     # https://developers.google.com/identity/protocols/oauth2/openid-connect#validatinganidtoken
     # https://pyjwt.readthedocs.io/en/latest/usage.html
     
-    pem = get_pem_key(token)
+    pem = get_pem_key(id_token)
     err = None
     try:
         payload = jwt.decode(
-            token, 
+            id_token, 
             key=pem,
             audience=google_secrets_config['web']['client_id'],
             issuer=GOOGLE_ISSUER,
@@ -185,44 +207,41 @@ def validate_access_token(token):
         # Verify that the ID token is properly signed by the issuer
         return None, 401
     
-    except Exception:
+    except Exception as e:
+        print('Error:', e)
         return None, 401
 
     return payload, None
 
 
-def get_pem_key(token):
+def get_pem_key(id_token):
 
     if os.path.isfile('keys/google_public_key.pem'):
         with open('keys/google_public_key.pem', 'rb') as f:
             pem = f.read()
     else:
-        pem = generate_pem_key(token)
+        pem = generate_pem_key(id_token)
         with open('keys/google_public_key.pem', 'wb') as f:
             f.write(pem)
 
     return pem
 
 
-def generate_pem_key(token):
+def generate_pem_key(id_token):
     # https://ncona.com/2015/02/consuming-a-google-id-token-from-a-server/
 
     # get key ID from header
     # header, _, signature = token.split('.')
     # kid = json.loads(base64url_decode(header).decode('utf-8'))['kid']
-    kid = jwt.get_unverified_header(token)['kid']
-
-    # retrieve the discovery document
-    # https://developers.google.com/identity/protocols/oauth2/openid-connect#discovery
-    discovery_document_url = GOOGLE_DISCOVERY_ENDPOINT
-    discovery_document = requests.get(discovery_document_url).json()
-
-    # get the value of jwks_uri
-    # https://www.googleapis.com/oauth2/v3/certs
-    jwks_uri = discovery_document['jwks_uri']
+    kid = jwt.get_unverified_header(id_token)['kid']
 
     # retreive the public keys
-    public_keys = requests.get(jwks_uri).json()['keys']
+    try:
+        public_keys = requests.get(GOOGLE_OPENID_ENDPOINTS['jwk']).json()['keys']
+    except Exception:
+        # get the value of jwks_uri
+        jwks_uri = get_openid_endpoint('jwks_uri')
+        public_keys = requests.get(jwks_uri).json()['keys']
 
     # get the key that matches the kid from header
     public_key = [key for key in public_keys if key['kid'] == kid][0]
@@ -231,6 +250,20 @@ def generate_pem_key(token):
     pem = jwk_to_pem(public_key)
 
     return pem
+
+
+def get_openid_endpoint(endpoint):
+
+    # retrieve the discovery document
+    # https://developers.google.com/identity/protocols/oauth2/openid-connect#discovery
+    discovery_document_url = GOOGLE_OPENID_ENDPOINTS['discovery']
+    discovery_document = requests.get(discovery_document_url).json()
+
+    # get the value of jwks_uri
+    # https://www.googleapis.com/oauth2/v3/certs
+    uri = discovery_document[endpoint]
+
+    return uri
 
 
 def jwk_to_pem(jwk_):
@@ -295,3 +328,5 @@ def base64url_decode(input):
         input += b"=" * (4 - rem)
 
     return base64.urlsafe_b64decode(input)
+
+    
