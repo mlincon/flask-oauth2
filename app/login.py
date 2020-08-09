@@ -108,13 +108,11 @@ def loginCallback():
     authorization_response = request.url
     token = flow.fetch_token(authorization_response=authorization_response)
 
-    # validate token
-    # if success get the decoded payload
+    # validate token, if success get the decoded payload
     payload, err = validate_access_token(token['id_token'])
     if err is not None:
         return error_response('Invalid credentials.', err)
-    # alternatively, use the verify_oauth2_token function from the
-    # google-auth library
+    # alternatively, use the verify_oauth2_token function from the google-auth library
     # https://developers.google.com/identity/one-tap/android/idtoken-auth
     
     print("\n", token['id_token'])
@@ -146,8 +144,7 @@ def validate_state_token(request, session):
 
 def validate_access_token(token):
 
-    # We need to validate all ID tokens on the server unless we know that they came 
-    # directly from Google
+    # We need to validate all ID tokens on the server unless we know that they came directly from Google
 
     # Since, we get the ID token from an HTTPS connection to Google using the 
     # client secret to authenticate the request, we can be confident that the 
@@ -156,8 +153,7 @@ def validate_access_token(token):
     # https://www.oauth.com/oauth2-servers/signing-in-with-google/verifying-the-user-info/
     
     # But if the server passes the ID token to other components of the app, 
-    # it is extremely important that the other components validate the token before 
-    # using it
+    # it is extremely important that the other components validate the token before using it
 
     # https://developers.google.com/identity/protocols/oauth2/openid-connect#validatinganidtoken
     # https://pyjwt.readthedocs.io/en/latest/usage.html
@@ -207,6 +203,7 @@ def get_pem_key(token):
 
     return pem
 
+
 def generate_pem_key(token):
     # https://ncona.com/2015/02/consuming-a-google-id-token-from-a-server/
 
@@ -248,6 +245,7 @@ def jwk_to_pem(jwk_):
     )
 
     return pem
+
 
 def base64_to_long(data):
     # taken from: https://github.com/rohe/pyjwkest/blob/master/src/jwkest/__init__.py

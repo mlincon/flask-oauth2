@@ -7,3 +7,6 @@ __pycache__
 
 Login_v11.zip
 Login_v11/**
+
+keys/**
+!keys/.gitkeep
