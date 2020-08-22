@@ -104,7 +104,7 @@ def loginCallback():
     authorization_response = request.url
     token = flow.fetch_token(authorization_response=authorization_response)
 
-    print('--token:', token)
+    # print('--token:', token)
 
     # validate token, if success get the decoded payload
     payload, err = validate_access_token(token['id_token'])
@@ -128,26 +128,45 @@ def loginCallback():
     token_type = token['token_type'] # Bearer
     auth_header = {'Authorization': f'{token_type} {access_token}'}
     try:
-        userinfo = requests.get(GOOGLE_OPENID_ENDPOINTS['userinfo'], headers = auth_header).json()
+        userinfo = requests.get(GOOGLE_OPENID_ENDPOINTS['userinfo'], headers = auth_header)
     except:
         # incase the stored URI did not work, fetch URI from discovery document
         userinfo_endpoint = get_openid_endpoint('userinfo_endpoint')
-        userinfo = requests.get(GOOGLE_OPENID_ENDPOINTS['userinfo'], headers = auth_header).json()
+        userinfo = requests.get(GOOGLE_OPENID_ENDPOINTS['userinfo'], headers = auth_header)
 
-    user = {
-        'name': userinfo['name'],
-        'email': userinfo['email'],
-        'picture': userinfo['picture'],
-        'email_verified': userinfo['email_verified']
-    }
+    if userinfo.status_code == 200:
+        userinfo = userinfo.json()
+        user = {
+            'name': userinfo['name'],
+            'email': userinfo['email'],
+            'picture': userinfo['picture'],
+            'email_verified': userinfo['email_verified']
+        }
 
-    session['user'] = user
+        session['user'] = user
+    else:
+        flask.redirect(flask.url_for('showRestaurants'))
+        # Todo: login failed
 
     return flask.redirect(flask.url_for('showRestaurants'))
 
 
-# @app.route('/logout')
+@app.route('/logout')
+def logout_user():
+    # only logout/ disconnect a connected user
+    print('I am in logout')
+    print('-logout: ', session['credentials'])
+    if 'credentials' in session:
+        r = requests.post(
+            GOOGLE_OPENID_ENDPOINTS['revoke'],
+            params={'token': session['credentials'].get('token')},
+            headers = {'content-type': 'application/x-www-form-urlencoded'}
+        ) 
+        if r.status_code == 200:
+            del session['credentials']
+            del session['user']
 
+    return flask.redirect(flask.url_for('showRestaurants'))
 
 def error_response(msg, err):
     response = flask.make_response(json.dumps(msg), err)
@@ -190,21 +209,25 @@ def validate_access_token(id_token):
             issuer=GOOGLE_ISSUER,
             verify=True
         )
-    except jwt.ExpiredSignatureError:
+    except jwt.ExpiredSignatureError as e:
         # Verify that the expiry time (exp claim) of the ID token has not passed
         # compare exp against current UTC time (timegm(datetime.utcnow().utctimetuple()))
+        print('Error:', e)
         return None, 401
 
-    except jwt.InvalidIssuerError:
+    except jwt.InvalidIssuerError as e:
         # Verify that the value of the iss claim in the ID token is equal to https://accounts.google.com
+        print('Error:', e)
         return None, 401
 
-    except jwt.InvalidAudienceError:
+    except jwt.InvalidAudienceError as e:
         # Verify that the value of the aud claim in the ID token is equal to app's client ID
+        print('Error:', e)
         return None, 401
 
-    except jwt.InvalidSignatureError:
+    except jwt.InvalidSignatureError as e:
         # Verify that the ID token is properly signed by the issuer
+        print('Error:', e)
         return None, 401
     
     except Exception as e:
@@ -221,8 +244,8 @@ def get_pem_key(id_token):
             pem = f.read()
     else:
         pem = generate_pem_key(id_token)
-        with open('keys/google_public_key.pem', 'wb') as f:
-            f.write(pem)
+        # with open('keys/google_public_key.pem', 'wb') as f:
+        #     f.write(pem)
 
     return pem
 

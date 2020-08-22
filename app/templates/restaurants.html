@@ -1,6 +1,8 @@
 {% extends "main.html" %}
 {% block content %}
-{% include "header.html" %}
+	{% with logged_in=logged_in, user_=user_ %}
+		{% include "header.html" %}
+	{% endwith %}
 	<div class="row top-menu">
 		<div class="col-md-10"></div>
 		<div class="col-md-2 text-right">
@@ -16,19 +18,19 @@
 		</div>
 	</div>
 
-<div class = 'flash'>
-		      {% with messages = get_flashed_messages() %}
-      {% if messages %}
-          
-        <ul>
-        {% for message in messages %}
-            <li> <strong> {{ message }} </strong> </li>
-        {% endfor %}
-        </ul>
-        {% endif %}
-    {% endwith %}
+	<div class = 'flash'>
+				{% with messages = get_flashed_messages() %}
+		{% if messages %}
+			
+			<ul>
+			{% for message in messages %}
+				<li> <strong> {{ message }} </strong> </li>
+			{% endfor %}
+			</ul>
+			{% endif %}
+		{% endwith %}
 
-</div>
+	</div>
 	
 	<div class="row padding-top padding-bottom">
 		<div class="col-md-1"></div>

@@ -1,3 +1,17 @@
+<style>
+	#user-area {
+		/* border: 1px solid lightgray; */
+		display: inline-block;
+		padding: 5px 10px 5px 10px;
+		border-radius: 2%;
+	}
+	#user-area img {
+		border-radius: 50%;
+		height: 40px;
+		width: 40px;
+		margin-right: 5px;
+	}
+</style>
 <div class="row top-menu">
 	<div class="col-md-6">
 		<a href="{{url_for('showRestaurants')}}">
@@ -6,9 +20,25 @@
 	</div>
 	<div class="col-md-6 text-right">
 		<p>
-			<a href="/login" style="color: #7B7573;">
-				Login
-			</a>
+			{% if logged_in %}
+				<div id="user-area">
+					<span>
+						<img src="{{ user_.picture }}">
+					</span> 
+
+					<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="display:inline;">
+						{{ user_.name }}
+					</a>
+					<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+						<a class="dropdown-item" href="{{ url_for('logout_user') }}">Logout</a>
+						<a class="dropdown-item" href="#">Settings</a>
+					</div>
+				</div>
+			{% else %}
+				<a href="/login" style="color: #7B7573;">
+					Login
+				</a>
+			{% endif %}
 		</p>
 	</div>
 </div>

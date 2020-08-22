@@ -38,7 +38,8 @@ GOOGLE_OPENID_ENDPOINTS = {
     'discovery': 'https://accounts.google.com/.well-known/openid-configuration',
     'jwk': 'https://www.googleapis.com/oauth2/v3/certs',
     'userinfo': 'https://openidconnect.googleapis.com/v1/userinfo',
-    'token': 'https://oauth2.googleapis.com/token'
+    'token': 'https://oauth2.googleapis.com/token',
+    'revoke': 'https://oauth2.googleapis.com/revoke'
 }
 
 

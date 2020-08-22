@@ -4,7 +4,7 @@ import json
 import hashlib
 
 import flask
-from flask import Flask, request, jsonify, flash
+from flask import Flask, request, jsonify, flash, session
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 
 from app import app, db
@@ -17,9 +17,13 @@ from app.models import Restaurant, MenuItem
 @app.route('/home')
 @app.route('/restaurant')
 def showRestaurants():
-
     restaurants = Restaurant.query.order_by(Restaurant.name.asc())
-    return flask.render_template('restaurants.html', restaurants = restaurants)
+    if 'credentials' in session:
+        # print(session['credentials'])
+        # print('-user: ', session['user'])
+        return flask.render_template('restaurants.html', restaurants = restaurants, logged_in = True, user_ = session['user'])
+    else:
+        return flask.render_template('restaurants.html', restaurants = restaurants, logged_in = False, user_ = {})
 
 #JSON APIs to view Restaurant Information
 @app.route('/restaurant/<int:restaurant_id>/menu/JSON')
@@ -48,9 +52,9 @@ def newRestaurant():
       db.session.add(newRestaurant)
       flash('New Restaurant %s Successfully Created' % newRestaurant.name)
       db.session.commit()
-      return redirect(url_for('showRestaurants'))
+      return flask.redirect(url_for('showRestaurants'))
   else:
-      return render_template('newRestaurant.html')
+      return flask.render_template('newRestaurant.html')
 
 #Edit a restaurant
 @app.route('/restaurant/<int:restaurant_id>/edit/', methods = ['GET', 'POST'])
@@ -60,9 +64,9 @@ def editRestaurant(restaurant_id):
         if request.form['name']:
             editedRestaurant.name = request.form['name']
             flash('Restaurant Successfully Edited %s' % editedRestaurant.name)
-            return redirect(url_for('showRestaurants'))
+            return flask.redirect(url_for('showRestaurants'))
     else:
-        return render_template('editRestaurant.html', restaurant = editedRestaurant)
+        return flask.render_template('editRestaurant.html', restaurant = editedRestaurant)
 
 
 #Delete a restaurant
@@ -73,9 +77,9 @@ def deleteRestaurant(restaurant_id):
         db.session.delete(restaurantToDelete)
         flash('%s Successfully Deleted' % restaurantToDelete.name)
         db.session.commit()
-        return redirect(url_for('showRestaurants', restaurant_id = restaurant_id))
+        return flask.redirect(url_for('showRestaurants', restaurant_id = restaurant_id))
     else:
-        return render_template('deleteRestaurant.html',restaurant = restaurantToDelete)
+        return flask.render_template('deleteRestaurant.html',restaurant = restaurantToDelete)
 
 #Show a restaurant menu
 @app.route('/restaurant/<int:restaurant_id>/')
@@ -83,7 +87,7 @@ def deleteRestaurant(restaurant_id):
 def showMenu(restaurant_id):
     restaurant = Restaurant.query.filter_by(id = restaurant_id).one()
     items = MenuItem.query.filter_by(restaurant_id = restaurant_id).all()
-    return render_template('menu.html', items = items, restaurant = restaurant)
+    return flask.render_template('menu.html', items = items, restaurant = restaurant)
      
 
 
@@ -96,9 +100,9 @@ def newMenuItem(restaurant_id):
         db.session.add(newItem)
         db.session.commit()
         flash('New Menu %s Item Successfully Created' % (newItem.name))
-        return redirect(url_for('showMenu', restaurant_id = restaurant_id))
+        return flask.redirect(url_for('showMenu', restaurant_id = restaurant_id))
     else:
-        return render_template('newmenuitem.html', restaurant_id = restaurant_id)
+        return flask.render_template('newmenuitem.html', restaurant_id = restaurant_id)
 
 #Edit a menu item
 @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit', methods=['GET','POST'])
@@ -118,9 +122,9 @@ def editMenuItem(restaurant_id, menu_id):
         db.session.add(editedItem)
         db.session.commit() 
         flash('Menu Item Successfully Edited')
-        return redirect(url_for('showMenu', restaurant_id = restaurant_id))
+        return flask.redirect(url_for('showMenu', restaurant_id = restaurant_id))
     else:
-        return render_template('editmenuitem.html', restaurant_id = restaurant_id, menu_id = menu_id, item = editedItem)
+        return flask.render_template('editmenuitem.html', restaurant_id = restaurant_id, menu_id = menu_id, item = editedItem)
 
 
 #Delete a menu item
@@ -132,8 +136,8 @@ def deleteMenuItem(restaurant_id,menu_id):
         db.session.delete(itemToDelete)
         db.session.commit()
         flash('Menu Item Successfully Deleted')
-        return redirect(url_for('showMenu', restaurant_id = restaurant_id))
+        return flask.redirect(url_for('showMenu', restaurant_id = restaurant_id))
     else:
-        return render_template('deleteMenuItem.html', item = itemToDelete)
+        return flask.render_template('deleteMenuItem.html', item = itemToDelete)
 
     
