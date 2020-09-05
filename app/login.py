@@ -28,21 +28,14 @@ from app.google_auth_config import google_secrets_config
 from app.google_auth_config import AUTHORIZATION_SCOPE, GOOGLE_ISSUER, GOOGLE_OPENID_ENDPOINTS
 from app.utils import credentials_to_dict
 
-# Create anti-forgery token
+
 @app.route('/login')
 def showLogin():
-    return flask.render_template('login.html')
+    return flask.render_template('login.html', requires_login=False)
 
 
 @app.route('/auth')
-def authorize():
-    # # TODO:
-    # https://developers.google.com/identity/protocols/oauth2/web-server#example
-    # https://www.mattbutton.com/2019/01/05/google-authentication-with-python-and-flask/
-    # https://realpython.com/flask-google-login/
-    # https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
-    # https://github.com/udacity/ud330/blob/master/Lesson2/step5/project.py
-    
+def authorize(): 
     # - create a Flow instance to manage the 0Auth 2.0 Authorization Grant Flow steps
     # - authenticate the client/identify the application using information from secrets
     # - identify the scope of the application
@@ -117,6 +110,8 @@ def loginCallback():
     # https://www.oauth.com/oauth2-servers/signing-in-with-google/verifying-the-user-info/
     # e.g.: https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=eyJ...
     
+    # TODO: Examine scopes of access granted by the user
+
     credentials = flow.credentials
     session['credentials'] = credentials_to_dict(credentials)
 
@@ -146,7 +141,7 @@ def loginCallback():
         session['user'] = user
     else:
         flask.redirect(flask.url_for('showRestaurants'))
-        # Todo: login failed
+        # TODO: login failed
 
     return flask.redirect(flask.url_for('showRestaurants'))
 
@@ -154,15 +149,14 @@ def loginCallback():
 @app.route('/logout')
 def logout_user():
     # only logout/ disconnect a connected user
-    print('I am in logout')
-    print('-logout: ', session['credentials'])
-    if 'credentials' in session:
+    # if 'credentials' in session:
+    if 'user' in session:
         r = requests.post(
             GOOGLE_OPENID_ENDPOINTS['revoke'],
             params={'token': session['credentials'].get('token')},
             headers = {'content-type': 'application/x-www-form-urlencoded'}
-        ) 
-        if r.status_code == 200:
+        )         
+        if r.status_code in [200, 400]: # TODO: why also 400?
             del session['credentials']
             del session['user']
 
@@ -317,9 +311,9 @@ def base64_to_long(data):
 
 
 def manual_base64_token_decoding(jwt):
-    # same as decode method from https://github.com/jpadilla/pyjwt/blob/master/jwt/api_jws.py
+    # from: https://github.com/jpadilla/pyjwt/blob/master/jwt/api_jws.py
     # but without the exception handlings
-    # use the library function jwt.decode(jwt, verify=False) directly
+    # recommended: use the library function jwt.decode(jwt, verify=False) directly
     if isinstance(jwt, str):
         jwt = jwt.encode('utf-8')
     
@@ -353,3 +347,11 @@ def base64url_decode(input):
     return base64.urlsafe_b64decode(input)
 
     
+
+## Sources
+# https://developers.google.com/identity/protocols/oauth2/web-server#example
+# https://www.mattbutton.com/2019/01/05/google-authentication-with-python-and-flask/
+# https://realpython.com/flask-google-login/
+# https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
+# https://github.com/udacity/ud330/blob/master/Lesson2/step5/project.py
+# https://developers.google.com/identity/protocols/oauth2
