@@ -39,7 +39,13 @@
 <div class="row align-items-center outer-div">
   <div class="col"></div>
   <div class="col login-card">
-    <div class="text-center">Login</div>
+    <div class="text-center">
+      {% if not requires_login %}
+        Please login to continue
+      {% else %}
+        Login
+      {% endif %}
+    </div>
     <hr>
     <div>
 
