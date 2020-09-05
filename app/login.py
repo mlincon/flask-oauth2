@@ -125,9 +125,10 @@ def loginCallback():
     try:
         userinfo = requests.get(GOOGLE_OPENID_ENDPOINTS['userinfo'], headers = auth_header)
     except:
+        # TODO: explicitly include the exact exception
         # incase the stored URI did not work, fetch URI from discovery document
         userinfo_endpoint = get_openid_endpoint('userinfo_endpoint')
-        userinfo = requests.get(GOOGLE_OPENID_ENDPOINTS['userinfo'], headers = auth_header)
+        userinfo = requests.get(userinfo_endpoint, headers = auth_header)
 
     if userinfo.status_code == 200:
         userinfo = userinfo.json()
