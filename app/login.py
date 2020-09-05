@@ -30,7 +30,7 @@ from app.utils import credentials_to_dict
 
 
 @app.route('/login')
-def showLogin():
+def login():
     return flask.render_template('login.html', requires_login=False)
 
 
