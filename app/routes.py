@@ -45,7 +45,7 @@ def restaurantsJSON():
 # Create a new restaurant
 @app.route('/restaurant/new/', methods=['GET','POST'])
 @login_required
-def newRestaurant():
+def newRestaurant(user_):
     if request.method == 'POST':
         newRestaurant = Restaurant(name = request.form['name'])
         db.session.add(newRestaurant)
@@ -53,12 +53,12 @@ def newRestaurant():
         db.session.commit()
         return redirect(url_for('showRestaurants'))
     else:
-        return flask.render_template('newRestaurant.html', user_ = session['user'])
+        return flask.render_template('newRestaurant.html', user_=user_)
 
 #Edit a restaurant
 @app.route('/restaurant/<int:restaurant_id>/edit/', methods = ['GET', 'POST'])
 @login_required
-def editRestaurant(restaurant_id):
+def editRestaurant(user_, restaurant_id):
     editedRestaurant = Restaurant.query.filter_by(id = restaurant_id).one()
     if request.method == 'POST':
         if request.form['name']:
@@ -66,13 +66,13 @@ def editRestaurant(restaurant_id):
             flash('Restaurant Successfully Edited %s' % editedRestaurant.name)
             return redirect(url_for('showRestaurants'))
     else:
-        return flask.render_template('editRestaurant.html', restaurant = editedRestaurant, user_ = session['user'])
+        return flask.render_template('editRestaurant.html', restaurant=editedRestaurant, user_=user_)
 
 
 #Delete a restaurant
 @app.route('/restaurant/<int:restaurant_id>/delete/', methods = ['GET','POST'])
 @login_required
-def deleteRestaurant(restaurant_id):
+def deleteRestaurant(user_, restaurant_id):
     restaurantToDelete = Restaurant.query.filter_by(id = restaurant_id).one()
     if request.method == 'POST':
         db.session.delete(restaurantToDelete)
@@ -80,7 +80,7 @@ def deleteRestaurant(restaurant_id):
         db.session.commit()
         return redirect(url_for('showRestaurants', restaurant_id = restaurant_id))
     else:
-        return flask.render_template('deleteRestaurant.html',restaurant = restaurantToDelete, user_ = session['user'])
+        return flask.render_template('deleteRestaurant.html', restaurant=restaurantToDelete, user_=user_)
 
 #Show a restaurant menu
 @app.route('/restaurant/<int:restaurant_id>/')
@@ -96,21 +96,21 @@ def showMenu(restaurant_id):
 #Create a new menu item
 @app.route('/restaurant/<int:restaurant_id>/menu/new/',methods=['GET','POST'])
 @login_required
-def newMenuItem(restaurant_id):
+def newMenuItem(user_, restaurant_id):
     restaurant = Restaurant.query.filter_by(id = restaurant_id).one()
     if request.method == 'POST':
         newItem = MenuItem(name = request.form['name'], description = request.form['description'], price = request.form['price'], course = request.form['course'], restaurant_id = restaurant_id)
         db.session.add(newItem)
         db.session.commit()
         flash('New Menu %s Item Successfully Created' % (newItem.name))
-        return redirect(url_for('showMenu', restaurant_id = restaurant_id))
+        return redirect(url_for('showMenu', restaurant_id=restaurant_id))
     else:
-        return flask.render_template('newmenuitem.html', restaurant_id = restaurant_id, user_ = session['user'])
+        return flask.render_template('newmenuitem.html', restaurant_id = restaurant_id, user_=user_)
 
 #Edit a menu item
 @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit', methods=['GET','POST'])
 @login_required
-def editMenuItem(restaurant_id, menu_id):
+def editMenuItem(user_, restaurant_id, menu_id):
     editedItem = MenuItem.query.filter_by(id = menu_id).one()
     restaurant = Restaurant.query.filter_by(id = restaurant_id).one()
     if request.method == 'POST':
@@ -129,17 +129,17 @@ def editMenuItem(restaurant_id, menu_id):
     else:
         return flask.render_template(
             'editmenuitem.html', 
-            restaurant_id = restaurant_id, 
-            menu_id = menu_id, 
-            item = editedItem, 
-            user_ = session['user']
+            restaurant_id=restaurant_id, 
+            menu_id=menu_id, 
+            item=editedItem, 
+            user_=user_
         )
 
 
 #Delete a menu item
 @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/delete', methods = ['GET','POST'])
 @login_required
-def deleteMenuItem(restaurant_id, menu_id):
+def deleteMenuItem(user_, restaurant_id, menu_id):
     restaurant = Restaurant.query.filter_by(id = restaurant_id).one()
     itemToDelete = MenuItem.query.filter_by(id = menu_id).one() 
     if request.method == 'POST':
@@ -148,6 +148,6 @@ def deleteMenuItem(restaurant_id, menu_id):
         flash('Menu Item Successfully Deleted')
         return redirect(url_for('showMenu', restaurant_id = restaurant_id))
     else:
-        return flask.render_template('deleteMenuItem.html', item = itemToDelete, user_ = session['user'])
+        return flask.render_template('deleteMenuItem.html', item=itemToDelete, user_=user_)
 
     
