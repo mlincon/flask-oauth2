@@ -22,9 +22,10 @@ def login_required(func):
     def check_login(*args, **kwarfs):
         if 'user' not in session:
             return redirect(url_for('login')) 
-        if 'user' in session:
-            user_ = session['user']
-        return func(user_=user_, *args, **kwarfs)
+        # if 'user' in session:
+        #     user_ = session['user']
+        # return func(user_=user_, *args, **kwarfs)
+        return func(*args, **kwarfs)
     return check_login
 
 

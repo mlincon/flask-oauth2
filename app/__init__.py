@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, session
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -26,3 +26,8 @@ else:
 
 
 from app import routes, login, models
+
+
+@app.context_processor
+def inject_user():
+    return dict(user_=session['user'] if 'user' in session else {})

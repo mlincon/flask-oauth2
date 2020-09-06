@@ -1,8 +1,8 @@
 {% extends "main.html" %}
 {% block content %}
-	{% with user_=user_ %}
-		{% include "header.html" %}
-	{% endwith %}
+	<!-- {% with user_=user_ %} -->
+	{% include "header.html" %}
+	<!-- {% endwith %} -->
 		<div class="row divider green">
 			<div class="col-md-12"></div>
 		</div>
@@ -19,14 +19,13 @@
 		</div>
 
 	<div class = 'flash'>
-				{% with messages = get_flashed_messages() %}
-		{% if messages %}
-			
-			<ul>
-			{% for message in messages %}
-				<li> <strong> {{ message }} </strong> </li>
-			{% endfor %}
-			</ul>
+		{% with messages = get_flashed_messages() %}
+			{% if messages %}
+				<ul>
+				{% for message in messages %}
+					<li> <strong> {{ message }} </strong> </li>
+				{% endfor %}
+				</ul>
 			{% endif %}
 		{% endwith %}
 
