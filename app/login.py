@@ -24,8 +24,6 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 
 from app import app, db
-from app.google_auth_config import google_secrets_config 
-from app.google_auth_config import AUTHORIZATION_SCOPE, GOOGLE_ISSUER, GOOGLE_OPENID_ENDPOINTS
 from app.utils import credentials_to_dict, get_user_id, get_user_info, create_user
 
 
@@ -40,8 +38,8 @@ def authorize():
     # - authenticate the client/identify the application using information from secrets
     # - identify the scope of the application
     flow = google_auth_oauthlib.flow.Flow.from_client_config(
-        google_secrets_config,
-        scopes=AUTHORIZATION_SCOPE
+        app.config['GOOGLE_SECRETS_CONFIG'],
+        scopes=app.config['AUTHORIZATION_SCOPE']
     )
 
     # - determine where the user is redirected after the authorization flow is complete
@@ -82,8 +80,8 @@ def loginCallback():
     # verified in the authorization server response.
     state = session['state']
     flow = google_auth_oauthlib.flow.Flow.from_client_config(
-        google_secrets_config,
-        scopes=AUTHORIZATION_SCOPE,
+        app.config['GOOGLE_SECRETS_CONFIG'],
+        scopes=app.config['AUTHORIZATION_SCOPE'],
         state=state
     )
     flow.redirect_uri = flask.url_for('loginCallback', _external=True)
@@ -123,7 +121,7 @@ def loginCallback():
     token_type = token['token_type'] # Bearer
     auth_header = {'Authorization': f'{token_type} {access_token}'}
     try:
-        userinfo = requests.get(GOOGLE_OPENID_ENDPOINTS['userinfo'], headers = auth_header)
+        userinfo = requests.get(app.config['GOOGLE_OPENID_ENDPOINTS']['userinfo'], headers = auth_header)
     except:
         # TODO: explicitly include the exact exception
         # incase the stored URI did not work, fetch URI from discovery document
@@ -160,7 +158,7 @@ def logout_user():
     # if 'credentials' in session:
     if 'user' in session:
         r = requests.post(
-            GOOGLE_OPENID_ENDPOINTS['revoke'],
+            app.config['GOOGLE_OPENID_ENDPOINTS']['revoke'],
             params={'token': session['credentials'].get('token')},
             headers = {'content-type': 'application/x-www-form-urlencoded'}
         )         
@@ -207,8 +205,8 @@ def validate_access_token(id_token):
         payload = jwt.decode(
             id_token, 
             key=pem,
-            audience=google_secrets_config['web']['client_id'],
-            issuer=GOOGLE_ISSUER,
+            audience=app.config['GOOGLE_SECRETS_CONFIG']['web']['client_id'],
+            issuer=app.config['GOOGLE_ISSUER'],
             verify=True
         )
     except jwt.ExpiredSignatureError as e:
@@ -262,7 +260,7 @@ def generate_pem_key(id_token):
 
     # retreive the public keys
     try:
-        public_keys = requests.get(GOOGLE_OPENID_ENDPOINTS['jwk']).json()['keys']
+        public_keys = requests.get(app.config['GOOGLE_OPENID_ENDPOINTS']['jwk']).json()['keys']
     except Exception:
         # get the value of jwks_uri
         jwks_uri = get_openid_endpoint('jwks_uri')
@@ -281,7 +279,7 @@ def get_openid_endpoint(endpoint):
 
     # retrieve the discovery document
     # https://developers.google.com/identity/protocols/oauth2/openid-connect#discovery
-    discovery_document_url = GOOGLE_OPENID_ENDPOINTS['discovery']
+    discovery_document_url = app.config['GOOGLE_OPENID_ENDPOINTS']['discovery']
     discovery_document = requests.get(discovery_document_url).json()
 
     # get the value of jwks_uri
