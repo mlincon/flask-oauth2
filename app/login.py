@@ -26,7 +26,7 @@ from cryptography.hazmat.primitives import serialization
 from app import app, db
 from app.google_auth_config import google_secrets_config 
 from app.google_auth_config import AUTHORIZATION_SCOPE, GOOGLE_ISSUER, GOOGLE_OPENID_ENDPOINTS
-from app.utils import credentials_to_dict
+from app.utils import credentials_to_dict, get_user_id, get_user_info, create_user
 
 
 @app.route('/login')
@@ -139,7 +139,14 @@ def loginCallback():
             'email_verified': userinfo['email_verified']
         }
 
-        session['user'] = user
+        if not user['email_verified']:
+            return flask.redirect(flask.url_for('showRestaurants')) 
+        else:
+            user_id = get_user_id(user['email'])
+            if not user_id:
+                user_id = create_user(user)
+            user['user_id'] = user_id
+            session['user'] = user
     else:
         flask.redirect(flask.url_for('showRestaurants'))
         # TODO: login failed
