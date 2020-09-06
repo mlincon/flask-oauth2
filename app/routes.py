@@ -43,9 +43,12 @@ def restaurantsJSON():
 # Create a new restaurant
 @app.route('/restaurant/new/', methods=['GET','POST'])
 @login_required
-def newRestaurant(user_):
+def newRestaurant():
+    if 'user' not in session:
+        flash('Please login to create a new restaurant', 'error')
+        return False
     if request.method == 'POST':
-        newRestaurant = Restaurant(name = request.form['name'], user_id=user_['user_id'])
+        newRestaurant = Restaurant(name = request.form['name'], user_id=session['user']['user_id'])
         db.session.add(newRestaurant)
         flash('New Restaurant %s Successfully Created' % newRestaurant.name)
         db.session.commit()
@@ -59,7 +62,7 @@ def newRestaurant(user_):
 @login_required
 def editRestaurant(restaurant_id):
     editedRestaurant = Restaurant.query.filter_by(id = restaurant_id).one()
-    # if editedRestaurant.user_id != user_['user_id']:
+    # if editedRestaurant.user_id != session['user']['user_id']:
     #     return "$(function(){    $.alert({title: 'Alert!', content: 'Simple alert!' });})"
     if request.method == 'POST':
         if request.form['name']:
@@ -76,7 +79,7 @@ def editRestaurant(restaurant_id):
 @login_required
 def deleteRestaurant(restaurant_id):
     restaurantToDelete = Restaurant.query.filter_by(id = restaurant_id).one()
-    # if restaurantToDelete.user_id != user_['user_id']:
+    # if restaurantToDelete.user_id != session['user']['user_id']:
     #     return ""
     if request.method == 'POST':
         db.session.delete(restaurantToDelete)
@@ -104,10 +107,10 @@ def showMenu(restaurant_id):
 def newMenuItem(restaurant_id):
     restaurant = Restaurant.query.filter_by(id = restaurant_id).one()
 
-    # # only the user who created the resturant is allowed to add a entry
-    # # TODO: add a admin user
-    # if restaurant.user_id != user_['user_id']:
-    #     return "$(function(){    $.alert({title: 'Alert!', content: 'Simple alert!' });})"
+    # only the user who created the resturant is allowed to add a entry
+    # TODO: add a admin user
+    if restaurant.user_id != session['user']['user_id']:
+        return "$(function(){    $.alert({title: 'Alert!', content: 'Simple alert!' });})"
 
     if request.method == 'POST':
         newItem = MenuItem(name = request.form['name'], description = request.form['description'], price = request.form['price'], course = request.form['course'], restaurant_id = restaurant_id)
@@ -127,7 +130,7 @@ def editMenuItem(restaurant_id, menu_id):
 
     # # only the user who created the resturant is allowed to edit the entry
     # # TODO: add a admin user
-    # if restaurant.user_id != user_['user_id']:
+    # if restaurant.user_id != session['user']['user_id']:
     #     return "$(function(){    $.alert({title: 'Alert!', content: 'Simple alert!' });})"
 
     editedItem = MenuItem.query.filter_by(id = menu_id).one()
@@ -156,7 +159,7 @@ def deleteMenuItem(restaurant_id, menu_id):
 
     # # only the user who created the resturant is allowed to delete the entry
     # # TODO: add a admin user
-    # if restaurant.user_id != user_['user_id']:
+    # if restaurant.user_id != session['user']['user_id']:
     #     return "$(function(){    $.alert({title: 'Alert!', content: 'Simple alert!' });})"
 
     itemToDelete = MenuItem.query.filter_by(id = menu_id).one() 
