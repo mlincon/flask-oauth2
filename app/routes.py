@@ -62,8 +62,12 @@ def newRestaurant():
 @login_required
 def editRestaurant(restaurant_id):
     editedRestaurant = Restaurant.query.filter_by(id = restaurant_id).one()
-    # if editedRestaurant.user_id != session['user']['user_id']:
-    #     return "$(function(){    $.alert({title: 'Alert!', content: 'Simple alert!' });})"
+
+    # only the user who created the resturant is allowed to delete the entry
+    # TODO: add a admin user
+    if editedRestaurant.user_id != session['user']['user_id']:
+        # TODO: implement better way to handle authorization
+        return "<script>function permissionDenied() {alert('You do not have permission for this action.')}</script><body onload=permissionDenied()>"
     if request.method == 'POST':
         if request.form['name']:
             editedRestaurant.name = request.form['name']
@@ -79,8 +83,12 @@ def editRestaurant(restaurant_id):
 @login_required
 def deleteRestaurant(restaurant_id):
     restaurantToDelete = Restaurant.query.filter_by(id = restaurant_id).one()
-    # if restaurantToDelete.user_id != session['user']['user_id']:
-    #     return ""
+
+    # only the user who created the resturant is allowed to delete the entry
+    # TODO: add a admin user
+    if restaurantToDelete.user_id != session['user']['user_id']:
+        # TODO: implement better way to handle authorization
+        return "<script>function permissionDenied() {alert('You do not have permission for this action.')}</script><body onload=permissionDenied()>"
     if request.method == 'POST':
         db.session.delete(restaurantToDelete)
         flash('%s Successfully Deleted' % restaurantToDelete.name)
@@ -110,10 +118,18 @@ def newMenuItem(restaurant_id):
     # only the user who created the resturant is allowed to add a entry
     # TODO: add a admin user
     if restaurant.user_id != session['user']['user_id']:
-        return "$(function(){    $.alert({title: 'Alert!', content: 'Simple alert!' });})"
+        # TODO: implement better way to handle authorization
+        return "<script>function permissionDenied() {alert('You do not have permission for this action.')}</script><body onload=permissionDenied()>"
 
     if request.method == 'POST':
-        newItem = MenuItem(name = request.form['name'], description = request.form['description'], price = request.form['price'], course = request.form['course'], restaurant_id = restaurant_id)
+        newItem = MenuItem(
+            name          = request.form['name'], 
+            description   = request.form['description'], 
+            price         = request.form['price'], 
+            course        = request.form['course'], 
+            restaurant_id = restaurant_id, 
+            user_id       = session['user']['user_id']
+        )
         db.session.add(newItem)
         db.session.commit()
         flash('New Menu %s Item Successfully Created' % (newItem.name))
@@ -128,10 +144,11 @@ def newMenuItem(restaurant_id):
 def editMenuItem(restaurant_id, menu_id):
     restaurant = Restaurant.query.filter_by(id = restaurant_id).one()
 
-    # # only the user who created the resturant is allowed to edit the entry
-    # # TODO: add a admin user
-    # if restaurant.user_id != session['user']['user_id']:
-    #     return "$(function(){    $.alert({title: 'Alert!', content: 'Simple alert!' });})"
+    # only the user who created the resturant is allowed to edit the entry
+    # TODO: add a admin user
+    if restaurant.user_id != session['user']['user_id']:
+        # TODO: implement better way to handle authorization
+        return "<script>function permissionDenied() {alert('You do not have permission for this action.')}</script><body onload=permissionDenied()>"
 
     editedItem = MenuItem.query.filter_by(id = menu_id).one()
     if request.method == 'POST':
@@ -157,10 +174,11 @@ def editMenuItem(restaurant_id, menu_id):
 def deleteMenuItem(restaurant_id, menu_id):
     restaurant = Restaurant.query.filter_by(id = restaurant_id).one()
 
-    # # only the user who created the resturant is allowed to delete the entry
-    # # TODO: add a admin user
-    # if restaurant.user_id != session['user']['user_id']:
-    #     return "$(function(){    $.alert({title: 'Alert!', content: 'Simple alert!' });})"
+    # only the user who created the resturant is allowed to delete the entry
+    # TODO: add a admin user
+    if restaurant.user_id != session['user']['user_id']:
+        # TODO: implement better way to handle authorization
+        return "<script>function permissionDenied() {alert('You do not have permission for this action.')}</script><body onload=permissionDenied()>"
 
     itemToDelete = MenuItem.query.filter_by(id = menu_id).one() 
     if request.method == 'POST':
