@@ -1,7 +1,10 @@
 ## About
 
-OAuth2.0/OpenID trial/test based on starter code from https://github.com/udacity/OAuth2.0
+OAuth2.0/OpenID authentication with backend in Flask.
+Also includes:
+- Flask-Migration
 
+Starter code forked from https://github.com/udacity/OAuth2.0.
 
 ### Start Flask app from cmd
 Set/register the Flask app (linux):
