@@ -8,7 +8,7 @@ from flask import Flask, request, jsonify, flash, session, redirect, url_for
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 
 from app import app, db
-from app.models import Restaurant, MenuItem
+from app.models import Restaurant, MenuItem, User
 from app.utils import login_required
 
 # Show all restaurants
@@ -105,7 +105,9 @@ def showMenu(restaurant_id):
     restaurant = Restaurant.query.filter_by(id = restaurant_id).one()
     items = MenuItem.query.filter_by(restaurant_id = restaurant_id).all()
     user_ = session['user'] if 'user' in session else {}
-    return flask.render_template('menu.html', items = items, restaurant = restaurant)
+    creator_name = User.query.filter_by(id = restaurant.user_id).one().name
+    creator_picture = User.query.filter_by(id = restaurant.user_id).one().picture
+    return flask.render_template('menu.html', items=items, restaurant=restaurant, cname=creator_name, cpicture=creator_picture)
      
 
 
