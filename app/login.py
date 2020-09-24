@@ -29,7 +29,7 @@ from app.utils import credentials_to_dict, get_user_id, get_user_info, create_us
 
 @app.route('/login')
 def login():
-    return flask.render_template('login.html', requires_login=False)
+    return flask.render_template('login_v2.html', requires_login=False)
 
 
 @app.route('/auth')

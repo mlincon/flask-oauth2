@@ -1,0 +1,101 @@
+/* Vendor login buttons: Google */
+.login-button {
+    margin: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border: 0.8px solid lightgray;
+    border-radius: 0.2em;
+    color: #212529;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+.login-button:hover{
+    text-decoration: none;
+}
+
+/* form elements */
+main.login-main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* centers horizontally based on screen height*/
+}
+
+form#signup-form {
+    width: 400px;
+    box-shadow: 0 15px 35px rgba(50, 50, 93, .1), 0 5px 15px rgba(0, 0, 0, .07);
+    border-radius: 4px;
+}
+
+div.form-header {
+    /* display: flex; */
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    padding-bottom: 30px;
+}
+
+div.login-text {
+    display: block;
+    margin-bottom: 15px;
+    color: black;
+}
+
+/* div.login-social {
+    display: flex;
+} */
+
+div.form-body {
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    padding: 48px 48px 16px;
+}
+
+div.form-body, div.form-footer {
+    background-color: #f4f5f7;
+}
+
+fieldset {
+    border: none;
+    width: 100%;
+    padding: 0;
+}
+
+div.form-field {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+input.field-input {
+    width: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    box-shadow: 0 1px 3px rgba(50,50,93,.15), 0 1px 0 rgba(0,0,0,.02);
+    border: 1px solid white;
+    border-radius: 4px;
+}
+
+input.field-input:focus {
+    outline: none;
+    border: 1px solid #3a86ff;
+}
+
+div.form-footer {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 48px;
+}
+
+div.form-footer > button {
+    background-color: #3a86ff;
+    color: white;
+    border-radius: 0.2em;
+}
+div.form-footer > button:hover {
+    background-color: #2176ff;
+    color: white;
+}
+  

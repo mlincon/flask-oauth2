@@ -17,7 +17,10 @@
 
 	<!-- jQuery-Confirm -->
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
-
+	
+	<!-- Further custom CSS -->
+	{% block cssStyle %}
+	{% endblock %}
 </head>
 
 <body>
@@ -42,5 +45,6 @@
 
 <!-- custom JS -->
 <!-- <script src="{{ url_for('static', filename='js/util.js') }}"></script> -->
-
+{% block jsScripts %}
+{% endblock %}
 </html>

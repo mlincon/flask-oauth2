@@ -1,0 +1,60 @@
+<!-- 
+Based on: https://www.freecodecamp.org/news/build-and-validate-beautiful-forms-with-vanilla-html-css-js/
+-->
+
+{% extends "main.html" %}
+
+{% block cssStyle %}
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/login.css') }}">
+{% endblock %}
+
+{% block content %}
+  <main class="login-main">
+    <form id="signup-form">
+      <div class="form-header">
+        <div class="login-text">Sign in with</div>
+
+        <div class="login-social">
+          <a href="/auth" class="btn-light btn-lg login-button text-center" role="button" style="width: 100%;">
+            <img width="20px" style="margin-bottom:3px; margin-right:5px" alt="Google sign-in"
+              src="{{ url_for('static', filename='images/icon-google.png') }}" />
+            Google
+          </a>
+
+          <a href="#" class="btn-light btn-lg login-button text-center" role="button" style="width: 100%;">
+            <img width="20px" style="margin-bottom:3px; margin-right:5px" alt="Google sign-in"
+              src="{{ url_for('static', filename='images/Twitter_Social_Icon_Circle_Color.png') }}" />
+            Twitter
+          </a>
+        </div> <!-- end: social login buttons -->
+
+      </div> <!-- end: form header -->
+
+      <div class="form-body">
+        <div class="login-text"> Sign in with email and password</div>      
+        <div class="form-field">
+          <!-- use fieldset to group related elements in a form, a box is draw -->
+          <fieldset class="email">
+            <input class="field-input" type="email" name="email" id="email" required placeholder="Email">
+            <div class="field-message"></div>
+          </fieldset>
+        </div> <!-- end: form field Email -->
+
+        <div class="form-field">
+          <fieldset class="password">
+            <input class="field-input" name="password" type="password" id="password" minlength="10" required placeholder="Password">
+          </fieldset>
+        </div> <!-- end: form field Password -->
+
+      </div> <!-- end: form body -->
+
+      <div class="form-footer">
+        <button class="btn-light btn-lg login-button" type="submit">Sign Up</button>
+      </div>
+    </form>
+  </main>
+{% endblock %}
+
+{% block jsScripts %}
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+{% endblock %}
